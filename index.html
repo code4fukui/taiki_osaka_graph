@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+
+<h1>大阪府 オキシダント推移グラフ</h1>
+<canvas id="canvas"></canvas>
+<footer>
+  Data: <a href=https://taiki.kankyo.pref.osaka.jp/taikikanshi/>大阪府　大気汚染常時監視オープンデータ</a> → <a href=https://github.com/code4fukui/taiki_osaka>src on GitHub</a><br>
+  App: <a href=https://github.com/code4fukui/graph_taiki_osaka/>src on GitHub</a><br>
+</footer>
+
+
+
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+import Chart from "https://js.sabae.cc/Chart.mjs";
+
+onload = async () => {
+  const url = "https://code4fukui.github.io/taiki_osaka/data2/OX.csv";
+  const data = CSV.toJSON(await CSV.fetch(url));
+  console.log(data);
+
+  // グラフ表示
+  const datasets = [];
+  let idx = 0;
+  for (const name in data[0]) {
+    const data1 = [];
+    const labels = [];
+  	for (const d of data) {
+      labels.push(d.dt);
+      const v = d[name];
+			data1.push(v == "***" ? null : v);
+		}
+		const hue = 360 / 8 * idx++;
+    const borderColor = `hsla(${hue},60%,50%,100%)`;
+		datasets.push({
+      type: "line",
+      label: name,
+      fill: false,
+      borderColor,
+      pointRadius: 0,
+      lineTension: 0,
+      data: data1,
+      borderWidth: 1,
+    });
+	}
+
+  const labels = [];
+  for (const d of data) {
+    labels.push(d.dt);
+  }
+
+  const config = {
+    data: { labels, datasets },
+    options: {
+      //title: { display: true, text: "OX" },
+      scales: {
+        xAxes: [{ scaleLabel: { display: false, labelString: "日付" } }],
+        yAxes: [{ scaleLabel: { display: true, labelString: "pbb" }, ticks: { beginAtZero: true } }],
+      },
+      legend: { display: true }
+    }
+  };
+  new Chart(canvas, config);
+};
+</script>
+
+<style>
+body {
+  text-align: center; 
+}
+footer {
+  margin: 1em;
+}
+</style>
